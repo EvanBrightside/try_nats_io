@@ -1,17 +1,17 @@
 # frozen_string_literal: true
 
-require './connect'
+require 'nats/client'
 require 'fiber'
 
-# Init subscribers
-class RequestReply < Connect
-  Connect.nats_server.subscribe('time') do |_, reply|
-    Connect.nats_server.publish(reply, 'response')
+NATS.start(servers:["nats://127.0.0.1:4222"]) do |nc|
+  nc.subscribe('time') do |_, reply|
+    nc.publish(reply, 'response')
   end
 
   Fiber.new do
     # Use the response
-    msg = Connect.nats_server.request('time', '')
+    msg = nc.request('time', '')
+    puts msg
     puts "Reply: #{msg}"
   end.resume
 end
